@@ -16,7 +16,7 @@ public class ServiceBookingDAO
 //    --------
     public void addBooking(ServiceBooking booking) throws SQLException
     {
-        String sql = "INSERT INTO service_booking (booking_id , vehicle_id , service_type , status ) VALUES (? ,? ,? ,?)";
+        String sql = "INSERT INTO service_booking (booking_id , vehicle_id , service_type , status , booking_date ) VALUES (? ,? ,? ,?, ?)";
 //        this is called try with resources , after block finishes , connection and statement auto close
         try(Connection con  = DbConnectionUtil.getConnection();
             PreparedStatement stmt = con.prepareStatement(sql);)
@@ -28,11 +28,44 @@ public class ServiceBookingDAO
             stmt.setString(3 , booking.getServiceType().name());
             stmt.setString(4 , booking.getStatus().name());
 
+            stmt.setDate(5, Date.valueOf(booking.getBookingDate()));
 //          INSERT / UPDATE / DELETE → use executeUpdate().
 //          SELECT → use executeQuery().
             stmt.executeUpdate();
         }
     }
+
+//    Update Booking Function
+public boolean updateBooking(ServiceBooking booking) throws SQLException{
+    String query = "UPDATE service_booking SET vehicle_id=?, service_type=?, booking_date=? WHERE booking_id=?";
+
+    try (Connection conn = DbConnectionUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(query)) {
+
+        ps.setInt(1, booking.getVehicleId());
+        ps.setString(2, booking.getServiceType().name());
+        ps.setDate(3, java.sql.Date.valueOf(booking.getBookingDate()));
+        ps.setInt(4, booking.getBookingId());
+
+        int rows = ps.executeUpdate();
+        return rows > 0;
+
+    }
+}
+// Method for Deleting the booking
+public boolean deleteBooking(int bookingId) throws SQLException {
+
+    String sql = "DELETE FROM service_booking WHERE booking_id = ?";
+
+    try (Connection conn = DbConnectionUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, bookingId);
+
+        int rows = ps.executeUpdate();
+        return rows > 0;
+    }
+}
 // --------------
 //    Check Duplicate Booking ID
 // --------------
@@ -182,6 +215,24 @@ public class ServiceBookingDAO
 
         return null;
     }
+//    Method to get all the bookings.
+public List<ServiceBooking> getAllBookings() throws SQLException {
+
+    String sql = "SELECT * FROM service_booking ORDER BY booking_id ASC";
+
+    List<ServiceBooking> bookings = new ArrayList<>();
+
+    try (Connection conn = DbConnectionUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+
+        while (rs.next()) {
+            bookings.add(mapResultSetToBooking(rs));
+        }
+    }
+
+    return bookings;
+}
 
     // ----------------------------
     // Helper Method
@@ -197,9 +248,13 @@ public class ServiceBookingDAO
         ServiceStatus status =
                 ServiceStatus.valueOf(rs.getString("status"));
 
-        // Handle nullable bay_id properly
         Integer bayId = rs.getObject("bay_id") != null
                 ? rs.getInt("bay_id")
+                : null;
+
+        Date sqlDate = rs.getDate("booking_date");
+        java.time.LocalDate bookingDate = (sqlDate != null)
+                ? sqlDate.toLocalDate()
                 : null;
 
         return new ServiceBooking(
@@ -207,7 +262,8 @@ public class ServiceBookingDAO
                 vehicleId,
                 serviceType,
                 status,
-                bayId
+                bayId,
+                bookingDate
         );
     }
 

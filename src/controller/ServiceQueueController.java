@@ -17,6 +17,13 @@ public class ServiceQueueController
     {
         service.addBooking(booking);
     }
+    public void updateBooking(ServiceBooking booking)
+    {
+        service.updateBooking(booking);
+    }
+    public void deleteBooking(int bookingId) {
+        service.deleteBooking(bookingId);
+    }
 
     public ServiceBooking serveNext()
     {
@@ -41,6 +48,10 @@ public class ServiceQueueController
 
     public List<ServiceBooking> getInProgressBookings() {
         return service.getInProgressBookings();
+    }
+    public List<ServiceBooking> getAllBookings()
+    {
+        return service.getAllBookings();
     }
 
 

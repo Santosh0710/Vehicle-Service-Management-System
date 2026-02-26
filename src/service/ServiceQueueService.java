@@ -9,6 +9,8 @@ import model.BayStatus;
 
 import exception.DuplicateBookingException;
 import exception.VehicleAlreadyBookedException;
+import exception.DatabaseException;
+import exception.BookingNotFoundException;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -52,7 +54,39 @@ public class ServiceQueueService {
             bookingDAO.addBooking(booking);
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error while adding booking.");
+            throw new DatabaseException("Database error while adding booking.");
+        }
+    }
+// method for Updating bookings
+public void updateBooking(ServiceBooking booking) {
+    try {
+        boolean updated = bookingDAO.updateBooking(booking);
+
+        if (!updated) {
+            throw new BookingNotFoundException(
+                    "Booking ID not found: " + booking.getBookingId()
+            );
+        }
+
+    } catch (SQLException e) {
+        throw new DatabaseException("Database error while updating booking", e);
+    }
+}
+// Method for deleting the booking
+
+    public void deleteBooking(int bookingId) {
+
+        try {
+            boolean deleted = bookingDAO.deleteBooking(bookingId);
+
+            if (!deleted) {
+                throw new BookingNotFoundException(
+                        "Booking ID not found: " + bookingId
+                );
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Error deleting booking", e);
         }
     }
 
@@ -63,34 +97,34 @@ public class ServiceQueueService {
 
         try {
 
-            // 1️⃣ Get available bay
+            // Getting  available bay First
             ServiceBay availableBay = serviceBayDAO.getAvailableBay();
 
             if (availableBay == null) {
                 return null; // No free bays
             }
 
-            // 2️⃣ Get next waiting booking
+            // now Getting next waiting booking
             ServiceBooking nextBooking = bookingDAO.getNextWaitingBooking();
 
             if (nextBooking == null) {
                 return null; // No customers waiting
             }
 
-            // 3️⃣ Update booking → IN_PROGRESS + assign bay
+            // 3⃣ Update booking → IN_PROGRESS + assign bay
             bookingDAO.updateStatusAndBay(
                     nextBooking.getBookingId(),
                     ServiceStatus.IN_PROGRESS,
                     availableBay.getBayId()
             );
 
-            // 4️⃣ Update bay → OCCUPIED
+            // 4 Update bay → OCCUPIED
             serviceBayDAO.updateBayStatus(
                     availableBay.getBayId(),
                     BayStatus.OCCUPIED
             );
 
-            // 5️⃣ Update in-memory object for UI consistency
+            // Update in-memory object for UI consistency
             nextBooking.setStatus(ServiceStatus.IN_PROGRESS);
             nextBooking.setBayId(availableBay.getBayId());
 
@@ -109,7 +143,7 @@ public class ServiceQueueService {
 
         try {
 
-            // 1️⃣ Get booking from DB
+            //  Get booking from DB
             ServiceBooking booking = bookingDAO.getBookingById(bookingId);
 
             if (booking == null) {
@@ -122,14 +156,14 @@ public class ServiceQueueService {
 
             int bayId = booking.getBayId();
 
-            // 2️⃣ Update booking → COMPLETED
+            //  Update booking → COMPLETED
             bookingDAO.updateStatusAndBay(
                     bookingId,
                     ServiceStatus.COMPLETED,
                     bayId
             );
 
-            // 3️⃣ Update bay → AVAILABLE
+            //  Update bay → AVAILABLE
             serviceBayDAO.updateBayStatus(
                     bayId,
                     BayStatus.AVAILABLE
@@ -177,7 +211,14 @@ public class ServiceQueueService {
             throw new RuntimeException("Error fetching in-progress bookings", e);
         }
     }
-
+// Getting All the bookings
+public List<ServiceBooking> getAllBookings() {
+    try {
+        return bookingDAO.getAllBookings();
+    } catch (SQLException e) {
+        throw new DatabaseException("Error fetching all bookings");
+    }
+}
 
     public boolean isEmpty() {
         try {
