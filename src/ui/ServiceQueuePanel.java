@@ -174,7 +174,7 @@ public class ServiceQueuePanel extends JPanel {
         buttonPanel.add(deleteBtn);
         buttonPanel.add(viewAllBtn);
 
-        deleteBtn.setEnabled(false);
+        //deleteBtn.setEnabled(false);
 
         add(buttonPanel, BorderLayout.SOUTH);
 
