@@ -3,6 +3,7 @@ import dao.ServiceBookingDAO;
 import dao.ServiceBayDAO;
 import service.ServiceQueueService;
 import controller.ServiceQueueController;
+import model.User;
 import javax.swing.*;
 import java.awt.*;
 
@@ -16,8 +17,15 @@ public class MainAppLauncher extends JFrame
             new ServiceQueueController(serviceQueueService);
     private final ServiceQueuePanel serviceQueuePanel = new ServiceQueuePanel(serviceQueueController);
 
-    public MainAppLauncher()
+    private User currentUser;
+    private String role;
+
+
+    public MainAppLauncher(User user)
     {
+        this.currentUser = user;
+        this.role = user.getRole();
+
         setTitle("Vehicle Service Management System");
         setSize(800 , 500);
         setLocationRelativeTo(null);
@@ -40,6 +48,10 @@ public class MainAppLauncher extends JFrame
         add(serviceQueueBtn);
         add(exitButton);
 
+//        Role restrictions
+        applyRoleRestrictions(customerButton, vehicleButton);
+        serviceQueuePanel.applyRole(role);
+
 //        Action Listeners
         customerButton.addActionListener(e -> {
             new CustomerManagementFrame();
@@ -56,12 +68,18 @@ public class MainAppLauncher extends JFrame
 
         exitButton.addActionListener(e -> System.exit(0));
 
+
+
         setVisible(true);
     }
+    private void applyRoleRestrictions(JButton customerButton, JButton vehicleButton) {
 
-    public static void main(String[] args) {
-        
-            new MainAppLauncher();
+        if ("STAFF".equalsIgnoreCase(role)) {
+
+            // STAFF cannot manage customers/vehicles
+            customerButton.setEnabled(false);
+            vehicleButton.setEnabled(false);
+        }
     }
 
 }

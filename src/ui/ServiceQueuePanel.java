@@ -44,6 +44,9 @@ public class ServiceQueuePanel extends JPanel {
     private JLabel inProgressLabel;
     private JLabel completedLabel;
 
+    private JButton updateBtn;
+    private JButton deleteBtn;
+
     private final ServiceQueueController controller;
 
     public ServiceQueuePanel(ServiceQueueController controller) {
@@ -152,8 +155,8 @@ public class ServiceQueuePanel extends JPanel {
         JButton viewPendingBtn = new JButton("View Pending");
         JButton viewCompletedBtn = new JButton("View Completed");
         JButton viewInProgressBtn = new JButton("View In Progress");
-        JButton updateButton = new JButton("Update Booking");
-        JButton deleteBtn = new JButton("Delete Booking");
+         updateBtn = new JButton("Update Booking");
+         deleteBtn = new JButton("Delete Booking");
         JButton viewAllBtn = new JButton("View All");
 
 
@@ -170,7 +173,7 @@ public class ServiceQueuePanel extends JPanel {
         buttonPanel.add(completeBtn);
         buttonPanel.add(viewCompletedBtn);
         buttonPanel.add(viewInProgressBtn);
-        buttonPanel.add(updateButton);
+        buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(viewAllBtn);
 
@@ -185,7 +188,7 @@ public class ServiceQueuePanel extends JPanel {
         completeBtn.addActionListener(e -> completeService());
         viewCompletedBtn.addActionListener(e -> showCompleted());
         viewInProgressBtn.addActionListener(e -> viewInProgressBookings());
-        updateButton.addActionListener(e -> updateBooking());
+        updateBtn.addActionListener(e -> updateBooking());
         deleteBtn.addActionListener(e -> deleteBooking());
         viewAllBtn.addActionListener(e -> loadAllBookings());
 
@@ -352,6 +355,13 @@ private void deleteBooking() {
         ex.printStackTrace();
     }
 }
+    public void applyRole(String role) {
+
+        if ("STAFF".equalsIgnoreCase(role)) {
+            updateBtn.setEnabled(false);
+            deleteBtn.setEnabled(false);
+        }
+    }
 
     // ================= SERVE =================
     private void serveNext() {
