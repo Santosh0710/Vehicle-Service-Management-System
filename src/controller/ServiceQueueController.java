@@ -2,7 +2,7 @@ package controller;
 import model.ServiceBooking;
 import service.ServiceQueueService;
 import java.util.List;
-import java.util.Queue;
+import java.time.LocalDate;
 
 
 public class ServiceQueueController
@@ -52,6 +52,9 @@ public class ServiceQueueController
     public List<ServiceBooking> getAllBookings()
     {
         return service.getAllBookings();
+    }
+    public List<ServiceBooking> getBookingsBetweenDates(LocalDate startDate, LocalDate endDate) {
+        return service.getBookingsBetweenDates(startDate, endDate);
     }
 
 

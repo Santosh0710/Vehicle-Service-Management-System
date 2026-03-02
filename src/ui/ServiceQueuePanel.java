@@ -24,6 +24,10 @@ public class ServiceQueuePanel extends JPanel {
     private JComboBox<ServiceType> serviceTypeBox;
     private JTextField bookingDateField;
 
+    private JTextField startDateField;
+    private JTextField endDateField;
+    private JButton filterBtn;
+
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -69,7 +73,7 @@ public class ServiceQueuePanel extends JPanel {
         completedLabel = new JLabel("Completed: 0");
 
         waitingLabel.setForeground(Color.BLUE);
-        inProgressLabel.setForeground(Color.ORANGE);
+        inProgressLabel.setForeground(Color.RED);
         completedLabel.setForeground(new Color(0, 128, 0));
 
         statsPanel.add(waitingLabel);
@@ -107,10 +111,32 @@ public class ServiceQueuePanel extends JPanel {
 
         centerPanel.add(formPanel, BorderLayout.NORTH);
 
+//        UI for GETTING SELECTED BOOKINGS USING DATES
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+
+        startDateField = new JTextField(10);
+        endDateField = new JTextField(10);
+        filterBtn = new JButton("Filter By Date");
+
+// Default values (optional but good UX)
+        startDateField.setText(LocalDate.now().minusDays(7).toString());
+        endDateField.setText(LocalDate.now().toString());
+
+        filterPanel.add(new JLabel("Start Date (YYYY-MM-DD):"));
+        filterPanel.add(startDateField);
+
+        filterPanel.add(new JLabel("End Date (YYYY-MM-DD):"));
+        filterPanel.add(endDateField);
+
+        filterPanel.add(filterBtn);
+
+// Add this panel to centerPanel
+        centerPanel.add(filterPanel, BorderLayout.SOUTH);
+
         // ===== TABLE =====
         String[] columns = {
                 "Booking ID", "Vehicle ID", "Service Type",
-                "Status", "Booking Date"
+                "Status", "Booking Date" , "Completed At"
         };
 
         tableModel = new DefaultTableModel(columns, 0);
@@ -205,7 +231,7 @@ public class ServiceQueuePanel extends JPanel {
                 loadTableData(currentList);
             }
         });
-
+        filterBtn.addActionListener(e -> filterByDate());
         updateStats();
     }
 
@@ -222,14 +248,15 @@ public class ServiceQueuePanel extends JPanel {
         int start = (currentPage - 1) * pageSize;
         int end = Math.min(start + pageSize, totalRecords);
 
-        for (ServiceBooking b : currentList) {
-
+        for (int i = start; i < end; i++) {
+            ServiceBooking b = currentList.get(i);
             tableModel.addRow(new Object[]{
                     b.getBookingId(),
                     b.getVehicleId(),
                     b.getServiceType(),
                     b.getStatus(),
-                    b.getBookingDate()
+                    b.getBookingDate(),
+                    b.getCompletedAt()
             });
         }
 
@@ -246,7 +273,7 @@ public class ServiceQueuePanel extends JPanel {
             ServiceType type = (ServiceType) serviceTypeBox.getSelectedItem();
 
             ServiceBooking booking =
-                    new ServiceBooking(bookingId, vehicleId, type, null, null, LocalDate.now());
+                    new ServiceBooking(bookingId, vehicleId, type, null, null, LocalDate.now() , null);
 
             controller.addBooking(booking);
 
@@ -454,6 +481,21 @@ private void loadAllBookings() {
     } catch (Exception e) {
         JOptionPane.showMessageDialog(this, "Error loading bookings");
         e.printStackTrace(); // for debugging
+    }
+}
+
+// METHOD FOR GETTING BOOKINGS BY DATE
+private void filterByDate() {
+    try {
+        LocalDate start = LocalDate.parse(startDateField.getText().trim());
+        LocalDate end = LocalDate.parse(endDateField.getText().trim());
+
+        currentPage = 1;
+        List<ServiceBooking> list = controller.getBookingsBetweenDates(start, end);
+        loadTableData(list);
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Invalid date format. Use YYYY-MM-DD");
     }
 }
 

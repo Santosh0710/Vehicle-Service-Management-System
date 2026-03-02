@@ -61,9 +61,17 @@ public class MainAppLauncher extends JFrame
         });
 
         serviceQueueBtn.addActionListener(e -> {
-            setContentPane(serviceQueuePanel);
-            revalidate();
-            repaint();
+            JFrame frame = new JFrame("Service Queue");
+
+            frame.setContentPane(new ServiceQueuePanel(serviceQueueController));
+
+            frame.setSize(900, 600);
+            frame.setLocationRelativeTo(null);
+
+            // 🔥 IMPORTANT FIX
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+            frame.setVisible(true);
         });
 
         exitButton.addActionListener(e -> System.exit(0));

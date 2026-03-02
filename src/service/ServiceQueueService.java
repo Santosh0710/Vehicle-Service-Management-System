@@ -14,6 +14,7 @@ import exception.BookingNotFoundException;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.time.LocalDate;
 
 public class ServiceQueueService {
 
@@ -217,6 +218,18 @@ public List<ServiceBooking> getAllBookings() {
         return bookingDAO.getAllBookings();
     } catch (SQLException e) {
         throw new DatabaseException("Error fetching all bookings");
+    }
+}
+
+// THIS METHOD IS FOR GETTING THE BOOKINGS BY DATE.
+public List<ServiceBooking> getBookingsBetweenDates(
+        LocalDate startDate,
+        LocalDate endDate) {
+
+    try {
+        return bookingDAO.getBookingsBetweenDates(startDate, endDate);
+    } catch (SQLException e) {
+        throw new DatabaseException("Error fetching bookings by date", e);
     }
 }
 

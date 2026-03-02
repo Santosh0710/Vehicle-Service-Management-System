@@ -5,6 +5,8 @@ import model.ServiceBooking;
 import model.ServiceType;
 import model.ServiceStatus;
 
+import java.time.LocalDate;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,7 +155,14 @@ public boolean deleteBooking(int bookingId) throws SQLException {
                                    ServiceStatus status,
                                    Integer bayId) throws SQLException {
 
-        String sql = "UPDATE service_booking SET status = ?, bay_id = ? WHERE booking_id = ?";
+        String sql;
+
+        // 🔥 If booking is completed → store completed_at
+        if (status == ServiceStatus.COMPLETED) {
+            sql = "UPDATE service_booking SET status = ?, bay_id = ?, completed_at = NOW() WHERE booking_id = ?";
+        } else {
+            sql = "UPDATE service_booking SET status = ?, bay_id = ? completed_at = NULL , WHERE booking_id = ?";
+        }
 
         try (Connection conn = DbConnectionUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -234,6 +243,36 @@ public List<ServiceBooking> getAllBookings() throws SQLException {
     return bookings;
 }
 
+// THIS IS ADVANCED METHOD FOR GETTING BOOKINGS BY DATE .
+
+public List<ServiceBooking> getBookingsBetweenDates(
+        LocalDate startDate,
+        LocalDate endDate) throws SQLException {
+
+    String sql = """
+        SELECT * FROM service_booking
+        WHERE booking_date BETWEEN ? AND ?
+        ORDER BY booking_date DESC
+        """;
+
+    List<ServiceBooking> bookings = new ArrayList<>();
+
+    try (Connection conn = DbConnectionUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setDate(1, Date.valueOf(startDate));
+        stmt.setDate(2, Date.valueOf(endDate));
+
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            bookings.add(mapResultSetToBooking(rs));
+        }
+    }
+
+    return bookings;
+}
+
     // ----------------------------
     // Helper Method
     // ----------------------------
@@ -257,13 +296,19 @@ public List<ServiceBooking> getAllBookings() throws SQLException {
                 ? sqlDate.toLocalDate()
                 : null;
 
+        Timestamp completedTs = rs.getTimestamp("completed_at");
+        java.time.LocalDateTime completedAt = (completedTs != null)
+                ? completedTs.toLocalDateTime()
+                : null;
+
         return new ServiceBooking(
                 bookingId,
                 vehicleId,
                 serviceType,
                 status,
                 bayId,
-                bookingDate
+                bookingDate,
+                completedAt
         );
     }
 

@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ServiceBooking
 {
@@ -13,6 +14,7 @@ public class ServiceBooking
 //COMPLETED → still assigned ,Primitive int cannot store null.
     private Integer bayId;
     private LocalDate bookingDate;
+    private java.time.LocalDateTime completedAt;
 
     public ServiceBooking(int bookingId, int vehicleId , ServiceType serviceType)
     {
@@ -26,14 +28,16 @@ public class ServiceBooking
                           ServiceType serviceType,
                           ServiceStatus status,
                           Integer bayId,
-                          LocalDate bookingDate)
-    {
+                          java.time.LocalDate bookingDate,
+                          java.time.LocalDateTime completedAt) {
+
         this.bookingId = bookingId;
         this.vehicleId = vehicleId;
         this.serviceType = serviceType;
         this.status = status;
         this.bayId = bayId;
         this.bookingDate = bookingDate;
+        this.completedAt = completedAt;
     }
 
     public int getBookingId()
@@ -72,6 +76,14 @@ public class ServiceBooking
 
     public void setBookingDate(LocalDate bookingDate) {
         this.bookingDate = bookingDate;
+    }
+
+    public java.time.LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(java.time.LocalDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 
 //    very important for GUI Display
