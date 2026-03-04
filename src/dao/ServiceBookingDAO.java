@@ -273,6 +273,78 @@ public List<ServiceBooking> getBookingsBetweenDates(
     return bookings;
 }
 
+// HERE WE ARE DEFINING METHODS FOR GETTING COUNT , AND SHOWING IN MAIN DASHBOARD
+
+//    GETTING TODAY'S BOOKINGS
+    public int getTodayBookingsCount() throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM service_booking WHERE DATE(booking_date) = CURDATE()";
+        try(Connection con = DbConnectionUtil.getConnection();
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery())
+        {
+            if(rs.next())
+            {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+// GETTING TODAYS COMPLETED BOOKINGS
+    public int getTodayCompletedCount() throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM service_booking WHERE DATE(completed_at) = CURDATE()";
+        try(Connection con = DbConnectionUtil.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery())
+        {
+            if(rs.next())
+            {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+//    GETTING TODAYS WAITING BOOKINGS
+    public int getTodayWaitingCount() throws SQLException
+    {
+        String sql = "SELECT COUNT(*) FROM service_booking " +
+            "WHERE DATE(booking_date) = CURDATE() " +
+            "AND status = 'WAITING'";
+
+        try (Connection conn = DbConnectionUtil.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery())
+        {
+            if (rs.next())
+            {
+            return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+//    GETTING COUNT OF TOTAL INPROGRESS BOOKINGS IN OUR GARAGE.
+
+    public int getInProgressBookingsCount() throws SQLException
+    {
+
+        String sql = "SELECT COUNT(*) FROM service_booking WHERE status = 'IN_PROGRESS'";
+
+        try (Connection conn = DbConnectionUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+
+        return 0;
+    }
+
     // ----------------------------
     // Helper Method
     // ----------------------------

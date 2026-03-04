@@ -51,19 +51,32 @@ public class ServiceQueuePanel extends JPanel {
     private JButton updateBtn;
     private JButton deleteBtn;
 
+//    this onBack variable is used here for going back to default window in MainAppLauncher.
+    private Runnable onBack;
+
+
     private final ServiceQueueController controller;
 
-    public ServiceQueuePanel(ServiceQueueController controller) {
+    public ServiceQueuePanel(ServiceQueueController controller , Runnable onBack) {
 
         this.controller = controller;
+        this.onBack = onBack;
 
         setLayout(new BorderLayout(20, 20));
+        setPreferredSize(new Dimension(1100, 700));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // ===== Title =====
         JLabel title = new JLabel("Service Queue Management", JLabel.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 22));
         title.setForeground(new Color(0, 70, 140));
+
+//        This is back button for exiting ServiceQueuePanel
+
+        JButton backBtn = new JButton("← Back");
+        backBtn.addActionListener(e -> onBack.run());
+
+        add(backBtn, BorderLayout.NORTH);
 
         // ===== Stats Panel =====
         JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
