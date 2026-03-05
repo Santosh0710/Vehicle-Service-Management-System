@@ -199,40 +199,50 @@ public class MainAppLauncher extends JFrame {
     private JPanel createDashboard() {
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(240, 242, 245));
+        panel.setBackground(Color.WHITE);
 
-        JPanel grid = new JPanel(new GridLayout(2, 2, 20, 20));
-        grid.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
-        grid.setBackground(new Color(240, 242, 245));
+        JLabel title = new JLabel("Today's Operations", JLabel.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setBorder(BorderFactory.createEmptyBorder(20,0,20,0));
 
+        panel.add(title, BorderLayout.NORTH);
 
-        grid.add(createCard("Today's Bookings", "12"));
-        grid.add(createCard("In Progress", "5"));
-        grid.add(createCard("Completed", "6"));
-        grid.add(createCard("Waiting", "1"));
+        JPanel cardsPanel = new JPanel(new GridLayout(2,2,30,30));
+        cardsPanel.setBorder(BorderFactory.createEmptyBorder(30,40,30,40));
+        cardsPanel.setBackground(Color.WHITE);
 
-        panel.add(grid, BorderLayout.CENTER);
+        int todayBookings = serviceQueueController.getTodayBookingsCount();
+        int todayCompleted = serviceQueueController.getTodayCompletedCount();
+        int inProgress = serviceQueueController.getTodayInProgressBookingsCount();
+        int waiting = serviceQueueController.getTodayWaitingCount();
+
+        cardsPanel.add(createCard("Today Bookings", todayBookings, new Color(52,152,219)));
+        cardsPanel.add(createCard("Today Completed", todayCompleted, new Color(46,204,113)));
+        cardsPanel.add(createCard("In Progress", inProgress, new Color(241,196,15)));
+        cardsPanel.add(createCard("Waiting", waiting, new Color(231,76,60)));
+
+        panel.add(cardsPanel, BorderLayout.CENTER);
 
         return panel;
     }
 
     // ================= CARD =================
 
-    private JPanel createCard(String title, String value) {
+    private JPanel createCard(String title, int value, Color color) {
 
         JPanel card = new JPanel();
         card.setLayout(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        card.setBackground(color);
+        card.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
-        JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        JLabel valueLabel = new JLabel(String.valueOf(value));
+        valueLabel.setForeground(Color.WHITE);
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        valueLabel.setHorizontalAlignment(JLabel.CENTER);
 
         card.add(titleLabel, BorderLayout.NORTH);
         card.add(valueLabel, BorderLayout.CENTER);

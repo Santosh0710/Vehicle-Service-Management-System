@@ -62,4 +62,25 @@ public class ServiceQueueController
     {
         return !service.isEmpty();
     }
+
+
+    //    Methods for Managing DashBoard Cards
+
+
+    public int getTodayBookingsCount() {
+        return service.getTodayBookingsCount();
+    }
+
+    public int getTodayCompletedCount() {
+        return service.getTodayCompletedCount();
+    }
+
+    public int getTodayInProgressBookingsCount() {
+        return service.getTodayInProgressBookingsCount();
+    }
+
+    public int getTodayWaitingCount() {
+        return service.getTodayWaitingCount();
+    }
+
 }

@@ -2,15 +2,11 @@ package service;
 
 import dao.ServiceBookingDAO;
 import dao.ServiceBayDAO;
+import exception.*;
 import model.ServiceBooking;
 import model.ServiceStatus;
 import model.ServiceBay;
 import model.BayStatus;
-
-import exception.DuplicateBookingException;
-import exception.VehicleAlreadyBookedException;
-import exception.DatabaseException;
-import exception.BookingNotFoundException;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -240,4 +236,39 @@ public List<ServiceBooking> getBookingsBetweenDates(
             throw new RuntimeException("Database error while checking queue.");
         }
     }
+
+//    Methods For managing DashBoard Cards
+
+    public int getTodayBookingsCount() {
+        try {
+            return bookingDAO.getTodayBookingsCount();
+        } catch (SQLException e) {
+            throw new ServiceException("Failed to fetch today's bookings", e);
+        }
+    }
+
+    public int getTodayCompletedCount() {
+        try {
+            return bookingDAO.getTodayCompletedCount();
+        } catch (SQLException e) {
+            throw new ServiceException("Failed to fetch today's completed bookings", e);
+        }
+    }
+
+    public int getTodayInProgressBookingsCount() {
+        try {
+            return bookingDAO.getTodayInProgressBookingsCount();
+        } catch (SQLException e) {
+            throw new ServiceException("Failed to fetch today's in-progress bookings", e);
+        }
+    }
+
+    public int getTodayWaitingCount() {
+        try {
+            return bookingDAO.getTodayWaitingCount();
+        } catch (SQLException e) {
+            throw new ServiceException("Failed to fetch today's waiting bookings", e);
+        }
+    }
+
 }

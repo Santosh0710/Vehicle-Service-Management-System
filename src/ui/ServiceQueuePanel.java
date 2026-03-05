@@ -26,7 +26,7 @@ public class ServiceQueuePanel extends JPanel {
 
     private JTextField startDateField;
     private JTextField endDateField;
-    private JButton filterBtn;
+    private RoundedButton filterBtn;
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -35,21 +35,21 @@ public class ServiceQueuePanel extends JPanel {
     private final int pageSize = 10;
     private int totalPages;
 
-    private JButton btnNext;
-    private JButton btnPrev;
+    private RoundedButton btnNext;
+    private RoundedButton btnPrev;
     private JLabel pageLabel;
 
     private List<ServiceBooking> currentList = new ArrayList<>();
 
-    private JButton serveBtn;
-    private JButton completeBtn;
+    private RoundedButton serveBtn;
+    private RoundedButton completeBtn;
 
     private JLabel waitingLabel;
     private JLabel inProgressLabel;
     private JLabel completedLabel;
 
-    private JButton updateBtn;
-    private JButton deleteBtn;
+    private RoundedButton updateBtn;
+    private RoundedButton deleteBtn;
 
 //    this onBack variable is used here for going back to default window in MainAppLauncher.
     private Runnable onBack;
@@ -57,120 +57,142 @@ public class ServiceQueuePanel extends JPanel {
 
     private final ServiceQueueController controller;
 
-    public ServiceQueuePanel(ServiceQueueController controller , Runnable onBack) {
+    public ServiceQueuePanel(ServiceQueueController controller, Runnable onBack) {
 
         this.controller = controller;
         this.onBack = onBack;
 
         setLayout(new BorderLayout(20, 20));
         setPreferredSize(new Dimension(1100, 700));
+        setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // ===== Title =====
+        // ================= HEADER =================
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+
+        RoundedButton backBtn = new RoundedButton("← Back");
+        backBtn.setFocusPainted(false);
+        backBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        backBtn.setBackground(new Color(230, 230, 230));
+
+        backBtn.addActionListener(e -> {
+            if (onBack != null) {
+                onBack.run();
+            }
+        });
+
         JLabel title = new JLabel("Service Queue Management", JLabel.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
         title.setForeground(new Color(0, 70, 140));
 
-//        This is back button for exiting ServiceQueuePanel
+        headerPanel.add(backBtn, BorderLayout.WEST);
+        headerPanel.add(title, BorderLayout.CENTER);
 
-        JButton backBtn = new JButton("← Back");
-        backBtn.addActionListener(e -> onBack.run());
+        // ================= STAT CARDS =================
+        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 20, 10));
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        add(backBtn, BorderLayout.NORTH);
-
-        // ===== Stats Panel =====
-        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
-
-        waitingLabel = new JLabel("Waiting: 0");
-        inProgressLabel = new JLabel("In Progress: 0");
-        completedLabel = new JLabel("Completed: 0");
-
-        waitingLabel.setForeground(Color.BLUE);
-        inProgressLabel.setForeground(Color.RED);
-        completedLabel.setForeground(new Color(0, 128, 0));
+        waitingLabel = createStatCard("Waiting", Color.BLUE);
+        inProgressLabel = createStatCard("In Progress", Color.ORANGE);
+        completedLabel = createStatCard("Completed", new Color(0, 150, 0));
 
         statsPanel.add(waitingLabel);
         statsPanel.add(inProgressLabel);
         statsPanel.add(completedLabel);
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(title, BorderLayout.NORTH);
+        topPanel.setOpaque(false);
+
+        topPanel.add(headerPanel, BorderLayout.NORTH);
         topPanel.add(statsPanel, BorderLayout.SOUTH);
 
         add(topPanel, BorderLayout.NORTH);
 
-        // ===== Center Panel =====
-        JPanel centerPanel = new JPanel(new BorderLayout(15, 15));
+        // ================= CENTER PANEL =================
+        JPanel centerPanel = new JPanel(new BorderLayout(20, 20));
+        centerPanel.setOpaque(false);
 
-        JPanel formPanel = new JPanel(new GridLayout(0, 2, 15, 15));
+        // ===== FORM PANEL =====
+        JPanel formPanel = new JPanel(new GridLayout(2, 4, 15, 10));
+        formPanel.setBorder(BorderFactory.createTitledBorder("Booking Details"));
 
         bookingIdField = new JTextField();
         vehicleIdField = new JTextField();
         serviceTypeBox = new JComboBox<>(ServiceType.values());
+
         bookingDateField = new JTextField(LocalDate.now().toString());
         bookingDateField.setEditable(false);
 
-        formPanel.add(new JLabel("Booking ID:"));
+        formPanel.add(new JLabel("Booking ID"));
+        formPanel.add(new JLabel("Vehicle ID"));
+        formPanel.add(new JLabel("Service Type"));
+        formPanel.add(new JLabel("Booking Date"));
+
         formPanel.add(bookingIdField);
-
-        formPanel.add(new JLabel("Vehicle ID:"));
         formPanel.add(vehicleIdField);
-
-        formPanel.add(new JLabel("Service Type:"));
         formPanel.add(serviceTypeBox);
-
-        formPanel.add(new JLabel("Booking Date:"));
         formPanel.add(bookingDateField);
 
         centerPanel.add(formPanel, BorderLayout.NORTH);
 
-//        UI for GETTING SELECTED BOOKINGS USING DATES
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // ================= FILTER PANEL =================
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         startDateField = new JTextField(10);
         endDateField = new JTextField(10);
-        filterBtn = new JButton("Filter By Date");
+        filterBtn = new RoundedButton("Filter");
 
-// Default values (optional but good UX)
         startDateField.setText(LocalDate.now().minusDays(7).toString());
         endDateField.setText(LocalDate.now().toString());
 
-        filterPanel.add(new JLabel("Start Date (YYYY-MM-DD):"));
+        filterPanel.setBorder(BorderFactory.createTitledBorder("Filter Bookings"));
+
+        filterPanel.add(new JLabel("Start Date"));
         filterPanel.add(startDateField);
 
-        filterPanel.add(new JLabel("End Date (YYYY-MM-DD):"));
+        filterPanel.add(new JLabel("End Date"));
         filterPanel.add(endDateField);
 
         filterPanel.add(filterBtn);
 
-// Add this panel to centerPanel
         centerPanel.add(filterPanel, BorderLayout.SOUTH);
 
-        // ===== TABLE =====
+        // ================= TABLE =================
         String[] columns = {
                 "Booking ID", "Vehicle ID", "Service Type",
-                "Status", "Booking Date" , "Completed At"
+                "Status", "Booking Date", "Completed At"
         };
 
         tableModel = new DefaultTableModel(columns, 0);
         table = new JTable(tableModel);
 
+        table.setRowHeight(28);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.setSelectionBackground(new Color(184, 207, 229));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+//       Selection model of table that enables autofill of form fields.
         table.getSelectionModel().addListSelectionListener(e -> {
+
             if (!e.getValueIsAdjusting()) {
+
                 int selectedRow = table.getSelectedRow();
 
                 if (selectedRow != -1) {
+
                     bookingIdField.setText(tableModel.getValueAt(selectedRow, 0).toString());
                     vehicleIdField.setText(tableModel.getValueAt(selectedRow, 1).toString());
 
-                    // Set Service Type (Enum)
+                    // Service Type Enum
                     String serviceTypeStr = tableModel.getValueAt(selectedRow, 2).toString();
                     serviceTypeBox.setSelectedItem(ServiceType.valueOf(serviceTypeStr));
 
-                    // Set Booking Date
+                    // Booking Date
                     Object dateObj = tableModel.getValueAt(selectedRow, 4);
+
                     if (dateObj != null) {
                         bookingDateField.setText(dateObj.toString());
                     }
@@ -179,48 +201,48 @@ public class ServiceQueuePanel extends JPanel {
         });
 
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Queue Status"));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Service Queue"));
 
         centerPanel.add(scrollPane, BorderLayout.CENTER);
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // ===== Buttons =====
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        // ================= BUTTON PANEL =================
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 6, 10, 10));
 
-        JButton addBtn = new JButton("Add Booking");
-        serveBtn = new JButton("Serve Next");
-        completeBtn = new JButton("Complete Service");
-        JButton viewPendingBtn = new JButton("View Pending");
-        JButton viewCompletedBtn = new JButton("View Completed");
-        JButton viewInProgressBtn = new JButton("View In Progress");
-         updateBtn = new JButton("Update Booking");
-         deleteBtn = new JButton("Delete Booking");
-        JButton viewAllBtn = new JButton("View All");
+        RoundedButton addBtn = new RoundedButton("Add Booking");
+        serveBtn = new RoundedButton("Serve Next");
+        completeBtn = new RoundedButton("Complete Service");
 
+        RoundedButton viewPendingBtn = new RoundedButton("View Pending");
+        RoundedButton viewCompletedBtn = new RoundedButton("View Completed");
+        RoundedButton viewInProgressBtn = new RoundedButton("View In Progress");
 
-        btnPrev = new JButton("Previous");
-        btnNext = new JButton("Next");
-        pageLabel = new JLabel("Page 1");
+        updateBtn = new RoundedButton("Update");
+        deleteBtn = new RoundedButton("Delete");
+        RoundedButton viewAllBtn = new RoundedButton("View All");
 
-        buttonPanel.add(btnPrev);
-        buttonPanel.add(btnNext);
-        buttonPanel.add(pageLabel);
+        btnPrev = new RoundedButton("Previous");
+        btnNext = new RoundedButton("Next");
+        pageLabel = new JLabel("Page 1", JLabel.CENTER);
+
         buttonPanel.add(addBtn);
         buttonPanel.add(serveBtn);
-        buttonPanel.add(viewPendingBtn);
         buttonPanel.add(completeBtn);
+        buttonPanel.add(viewPendingBtn);
         buttonPanel.add(viewCompletedBtn);
         buttonPanel.add(viewInProgressBtn);
+
         buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
         buttonPanel.add(viewAllBtn);
-
-        //deleteBtn.setEnabled(false);
+        buttonPanel.add(btnPrev);
+        buttonPanel.add(pageLabel);
+        buttonPanel.add(btnNext);
 
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // ===== Actions =====
+        // ================= ACTIONS =================
         addBtn.addActionListener(e -> addBooking());
         serveBtn.addActionListener(e -> serveNext());
         viewPendingBtn.addActionListener(e -> showPending());
@@ -244,10 +266,29 @@ public class ServiceQueuePanel extends JPanel {
                 loadTableData(currentList);
             }
         });
+
         filterBtn.addActionListener(e -> filterByDate());
+
         updateStats();
     }
 
+//    Stats Card
+    private JLabel createStatCard(String title, Color color)
+    {
+
+        JLabel label = new JLabel(title + ": 0", JLabel.CENTER);
+        label.setOpaque(true);
+
+        label.setBackground(new Color(245, 245, 245));
+        label.setForeground(color);
+
+        label.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        label.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+
+        return label;
+    }
+
+//
     // ================= TABLE =================
     private void loadTableData(List<ServiceBooking> list) {
 

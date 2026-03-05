@@ -19,9 +19,11 @@ public class CustomerManagementFrame extends JFrame {
     private JTextField phoneField;
     private JTextField addressField;
     private JTextField createdDateField;
+
     private JTextField searchPhoneField;
     private JTextField searchNameField;
     private JTextField searchEmailField;
+
     private JButton searchNameButton;
     private JButton searchEmailButton;
     private JButton resetButton;
@@ -41,33 +43,62 @@ public class CustomerManagementFrame extends JFrame {
 
     private final CustomerController controller = new CustomerController();
 
+    // ================= CONSTRUCTOR =================
     public CustomerManagementFrame() {
 
         setTitle("Customer Management");
-        setSize(950, 550);
+        setSize(1000, 650);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(15, 15));
 
-        add(createFormPanel(), BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(createHeaderPanel(), BorderLayout.NORTH);
+        topPanel.add(createFormPanel(), BorderLayout.CENTER);
+
+        add(topPanel, BorderLayout.NORTH);
         add(createTablePanel(), BorderLayout.CENTER);
         add(createButtonPanel(), BorderLayout.SOUTH);
 
         loadCustomers();
+
         setVisible(true);
+    }
+
+    // ================= HEADER PANEL =================
+    private JPanel createHeaderPanel() {
+
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JButton backBtn = new RoundedButton("← Back");
+        backBtn.addActionListener(e -> dispose());
+
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        leftPanel.add(backBtn);
+
+        JLabel title = new JLabel("Customer Management", JLabel.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setForeground(new Color(0, 70, 140));
+
+        panel.add(leftPanel, BorderLayout.WEST);
+        panel.add(title, BorderLayout.CENTER);
+
+        return panel;
     }
 
     // ================= FORM PANEL =================
     private JPanel createFormPanel() {
 
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout(10,10));
 
-        JPanel formFields = new JPanel(new GridLayout(5, 2, 10, 5));
+        JPanel formFields = new JPanel(new GridLayout(5, 2, 15, 10));
+        formFields.setBorder(BorderFactory.createTitledBorder("Customer Details"));
 
         nameField = new JTextField();
         emailField = new JTextField();
         phoneField = new JTextField();
         addressField = new JTextField();
+
         createdDateField = new JTextField(LocalDate.now().toString());
         createdDateField.setEditable(false);
 
@@ -86,32 +117,44 @@ public class CustomerManagementFrame extends JFrame {
         formFields.add(new JLabel("Created Date:"));
         formFields.add(createdDateField);
 
-        JPanel searchPanel = new JPanel();
-        searchPhoneField = new JTextField(15);
-        searchNameField = new JTextField(15);
-        searchEmailField = new JTextField(15);
-        JButton searchPhoneButton = new JButton("Find by Phone");
-        searchNameButton = new JButton("Search by Name");
-        searchEmailButton = new JButton("Search by Email");
-        resetButton = new JButton("Reset");
+        // ===== Search Panel =====
 
-        searchPanel.add(new JLabel("Search Phone:"));
+        JPanel searchPanel = new JPanel();
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Search Customer"));
+
+        searchPhoneField = new JTextField(12);
+        searchNameField = new JTextField(12);
+        searchEmailField = new JTextField(12);
+
+        JButton searchPhoneButton = new RoundedButton("Find by Phone");
+        searchNameButton = new RoundedButton("Search by Name");
+        searchEmailButton = new RoundedButton("Search by Email");
+
+        resetButton = new RoundedButton("Reset");
+
+        searchPanel.add(new JLabel("Phone:"));
         searchPanel.add(searchPhoneField);
         searchPanel.add(searchPhoneButton);
 
-        searchPhoneButton.addActionListener(e -> findCustomer());
-
-        searchPanel.add(new JLabel("Search By Name:"));
+        searchPanel.add(new JLabel("Name:"));
         searchPanel.add(searchNameField);
         searchPanel.add(searchNameButton);
 
-        //-> Action listener of search name
+        searchPanel.add(new JLabel("Email:"));
+        searchPanel.add(searchEmailField);
+        searchPanel.add(searchEmailButton);
+
+        searchPanel.add(resetButton);
+
+        // ===== ACTIONS =====
+
+        searchPhoneButton.addActionListener(e -> findCustomer());
+
         searchNameButton.addActionListener(e -> {
             try {
+
                 String name = searchNameField.getText();
-
                 List<Customer> customers = controller.findCustomerByName(name);
-
                 loadTableData(customers);
 
             } catch (Exception ex) {
@@ -119,15 +162,10 @@ public class CustomerManagementFrame extends JFrame {
             }
         });
 
-        searchPanel.add(new JLabel("Search By Email:"));
-        searchPanel.add(searchEmailField);
-        searchPanel.add(searchEmailButton);
-
-        // Action Listener of search email.
         searchEmailButton.addActionListener(e -> {
             try {
-                String email = searchEmailField.getText();
 
+                String email = searchEmailField.getText();
                 Customer customer = controller.findCustomerByEmail(email);
 
                 List<Customer> list = new ArrayList<>();
@@ -143,14 +181,14 @@ public class CustomerManagementFrame extends JFrame {
             }
         });
 
-        searchPanel.add(resetButton);
-
         resetButton.addActionListener(e -> {
+
             currentPage = 1;
-            loadCustomers(); // your existing pagination method
+            loadCustomers();
+
         });
 
-        panel.add(formFields, BorderLayout.CENTER);
+        panel.add(formFields, BorderLayout.NORTH);
         panel.add(searchPanel, BorderLayout.SOUTH);
 
         return panel;
@@ -164,18 +202,37 @@ public class CustomerManagementFrame extends JFrame {
         };
 
         tableModel = new DefaultTableModel(columns, 0);
+
         customerTable = new JTable(tableModel);
         customerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        customerTable.setRowHeight(25);
+        customerTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        customerTable.setSelectionBackground(new Color(180, 220, 255));
+
         customerTable.getSelectionModel().addListSelectionListener(e -> {
+
             int row = customerTable.getSelectedRow();
+
             if (row >= 0) {
-                selectedCustomerId = (Integer) tableModel.getValueAt(row, 0);
-                nameField.setText(tableModel.getValueAt(row, 1).toString());
-                emailField.setText(tableModel.getValueAt(row, 2).toString());
-                phoneField.setText(tableModel.getValueAt(row, 3).toString());
-                addressField.setText(tableModel.getValueAt(row, 4).toString());
-                createdDateField.setText(tableModel.getValueAt(row, 5).toString());
+
+                selectedCustomerId =
+                        (Integer) tableModel.getValueAt(row, 0);
+
+                nameField.setText(
+                        tableModel.getValueAt(row, 1).toString());
+
+                emailField.setText(
+                        tableModel.getValueAt(row, 2).toString());
+
+                phoneField.setText(
+                        tableModel.getValueAt(row, 3).toString());
+
+                addressField.setText(
+                        tableModel.getValueAt(row, 4).toString());
+
+                createdDateField.setText(
+                        tableModel.getValueAt(row, 5).toString());
             }
         });
 
@@ -185,26 +242,30 @@ public class CustomerManagementFrame extends JFrame {
     // ================= BUTTON PANEL =================
     private JPanel createButtonPanel() {
 
-        JPanel panel = new JPanel();
+        JPanel panel =
+                new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
-        JButton addButton = new JButton("Add");
-        JButton updateButton = new JButton("Update");
-        JButton deleteButton = new JButton("Delete");
-        JButton clearButton = new JButton("Clear");
+        JButton addButton = new RoundedButton("Add");
+        JButton updateButton = new RoundedButton("Update");
+        JButton deleteButton = new RoundedButton("Delete");
+        JButton clearButton = new RoundedButton("Clear");
 
-        btnPrev = new JButton("Previous");
-        btnNext = new JButton("Next");
+        btnPrev = new RoundedButton("Previous");
+        btnNext = new RoundedButton("Next");
+
         pageLabel = new JLabel("Page 1");
 
         panel.add(btnPrev);
         panel.add(btnNext);
         panel.add(pageLabel);
+
         panel.add(addButton);
         panel.add(updateButton);
         panel.add(deleteButton);
         panel.add(clearButton);
 
         btnPrev.addActionListener(e -> {
+
             if (currentPage > 1) {
                 currentPage--;
                 loadCustomers();
@@ -212,6 +273,7 @@ public class CustomerManagementFrame extends JFrame {
         });
 
         btnNext.addActionListener(e -> {
+
             if (currentPage < totalPages) {
                 currentPage++;
                 loadCustomers();
@@ -237,11 +299,13 @@ public class CustomerManagementFrame extends JFrame {
             int totalRecords =
                     controller.getTotalCustomerCount();
 
-            totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+            totalPages =
+                    (int) Math.ceil((double) totalRecords / pageSize);
 
             tableModel.setRowCount(0);
 
             for (Customer c : customers) {
+
                 tableModel.addRow(new Object[]{
                         c.getCustomerId(),
                         c.getCustomerName(),
@@ -252,50 +316,63 @@ public class CustomerManagementFrame extends JFrame {
                 });
             }
 
-            pageLabel.setText("Page " + currentPage + " of " + totalPages);
+            pageLabel.setText(
+                    "Page " + currentPage + " of " + totalPages);
 
             btnPrev.setEnabled(currentPage > 1);
             btnNext.setEnabled(currentPage < totalPages);
 
         } catch (BusinessException e) {
+
             JOptionPane.showMessageDialog(this, e.getMessage());
 
         } catch (RuntimeException e) {
+
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
     }
-//    Method to load customers when searched by phone , name or email.
+
+    // ================= LOAD SEARCH DATA =================
     private void loadTableData(List<Customer> customers) {
-        tableModel.setRowCount(0); // clear old data
 
-            for (Customer c : customers)
-            {
-                tableModel.addRow(new Object[]{
-                c.getCustomerId(),
-                c.getCustomerName(),
-                c.getEmail(),c.getPhone(),
-                c.getAddress(),
-                c.getCreatedDate()
-                });
-             }
-}
+        tableModel.setRowCount(0);
 
-    // ================= FIND =================
+        for (Customer c : customers) {
+
+            tableModel.addRow(new Object[]{
+                    c.getCustomerId(),
+                    c.getCustomerName(),
+                    c.getEmail(),
+                    c.getPhone(),
+                    c.getAddress(),
+                    c.getCreatedDate()
+            });
+        }
+    }
+
+    // ================= FIND BY PHONE =================
     private void findCustomer() {
 
         String phone = searchPhoneField.getText().trim();
 
         if (phone.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Enter phone number");
+
+            JOptionPane.showMessageDialog(this,
+                    "Enter phone number");
+
             return;
         }
 
         try {
 
-            Customer customer = controller.findCustomerByPhone(phone);
+            Customer customer =
+                    controller.findCustomerByPhone(phone);
 
             if (customer == null) {
-                JOptionPane.showMessageDialog(this, "Customer not found");
+
+                JOptionPane.showMessageDialog(this,
+                        "Customer not found");
+
                 return;
             }
 
@@ -305,25 +382,31 @@ public class CustomerManagementFrame extends JFrame {
             emailField.setText(customer.getEmail());
             phoneField.setText(customer.getPhone());
             addressField.setText(customer.getAddress());
-            createdDateField.setText(customer.getCreatedDate().toString());
+            createdDateField.setText(
+                    customer.getCreatedDate().toString());
 
-            JOptionPane.showMessageDialog(this, "Customer Found");
+            JOptionPane.showMessageDialog(this,
+                    "Customer Found");
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+
+            JOptionPane.showMessageDialog(this,
+                    e.getMessage());
         }
     }
 
-    // ================= ADD =================
+    // ================= ADD CUSTOMER =================
     private void addCustomer() {
 
         try {
 
             Customer customer = new Customer();
+
             customer.setCustomerName(nameField.getText());
             customer.setEmail(emailField.getText());
             customer.setPhone(phoneField.getText());
             customer.setAddress(addressField.getText());
+
             customer.setCreatedDate(LocalDate.now());
 
             int id = controller.addCustomer(customer);
@@ -335,80 +418,102 @@ public class CustomerManagementFrame extends JFrame {
             clearFields();
 
         } catch (BusinessException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+
+            JOptionPane.showMessageDialog(this,
+                    e.getMessage());
+
         } catch (DatabaseException e) {
-            JOptionPane.showMessageDialog(this, "System error.");
+
+            JOptionPane.showMessageDialog(this,
+                    "System error.");
         }
     }
 
-    // ================= UPDATE =================
+    // ================= UPDATE CUSTOMER =================
     private void updateCustomer() {
 
         if (selectedCustomerId == null) {
+
             JOptionPane.showMessageDialog(this,
                     "Select a customer first");
+
             return;
         }
 
         try {
 
             Customer customer = new Customer();
+
             customer.setCustomerId(selectedCustomerId);
+
             customer.setCustomerName(nameField.getText());
             customer.setEmail(emailField.getText());
             customer.setPhone(phoneField.getText());
             customer.setAddress(addressField.getText());
-            customer.setCreatedDate(LocalDate.parse(createdDateField.getText()));
+
+            customer.setCreatedDate(
+                    LocalDate.parse(createdDateField.getText()));
 
             controller.updateCustomer(customer);
 
-            JOptionPane.showMessageDialog(this, "Customer Updated");
+            JOptionPane.showMessageDialog(this,
+                    "Customer Updated");
 
             loadCustomers();
             clearFields();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+
+            JOptionPane.showMessageDialog(this,
+                    e.getMessage());
         }
     }
 
-    // ================= DELETE =================
+    // ================= DELETE CUSTOMER =================
     private void deleteCustomer() {
 
         if (selectedCustomerId == null) {
+
             JOptionPane.showMessageDialog(this,
                     "Select a customer first");
+
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Delete this customer?",
-                "Confirm",
-                JOptionPane.YES_NO_OPTION
-        );
+        int confirm =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Delete this customer?",
+                        "Confirm",
+                        JOptionPane.YES_NO_OPTION
+                );
 
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
 
         controller.deleteCustomer(selectedCustomerId);
 
-        JOptionPane.showMessageDialog(this, "Customer Deleted");
+        JOptionPane.showMessageDialog(this,
+                "Customer Deleted");
 
         loadCustomers();
         clearFields();
     }
 
-    // ================= CLEAR =================
+    // ================= CLEAR FIELDS =================
     private void clearFields() {
 
         nameField.setText("");
         emailField.setText("");
         phoneField.setText("");
         addressField.setText("");
+
         createdDateField.setText(LocalDate.now().toString());
+
         selectedCustomerId = null;
+
         searchPhoneField.setText("");
-        searchEmailField.setText("");
         searchNameField.setText("");
+        searchEmailField.setText("");
     }
 }

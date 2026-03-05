@@ -308,6 +308,7 @@ public List<ServiceBooking> getBookingsBetweenDates(
     }
 
 //    GETTING TODAYS WAITING BOOKINGS
+
     public int getTodayWaitingCount() throws SQLException
     {
         String sql = "SELECT COUNT(*) FROM service_booking " +
@@ -328,7 +329,7 @@ public List<ServiceBooking> getBookingsBetweenDates(
 
 //    GETTING COUNT OF TOTAL INPROGRESS BOOKINGS IN OUR GARAGE.
 
-    public int getInProgressBookingsCount() throws SQLException
+    public int getTodayInProgressBookingsCount() throws SQLException
     {
 
         String sql = "SELECT COUNT(*) FROM service_booking WHERE status = 'IN_PROGRESS'";
